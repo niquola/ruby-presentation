@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>reveal.js - The HTML Presentation Framework</title>
+
+    <meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+    <meta name="author" content="Hakim El Hattab">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.5, maximum-scale=1.5, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+      //setTimeout(function(){ location.reload(); },10000);
+    </script>
+
+    <style>
+      code {
+        max-height: 1000px !important;
+      }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	<h1>ruby intro</h1>
+	<p>Ruby ecosystem</p>
+	<img src="ruby.jpg">
+	</section>
+	<section>
+	<h2>in 1993 by Yukihiro Matsumoto</h2>
+	<img src="ruby-diag.png">
+	</section>
+
+	<section>
+	<h2>PHILOSOPHY of RUBY</h2>
+	<h2>HUMAN CENTRIC</h2>
+	<img src="body.jpg">
+	<p>Ruby is simple in appearance but is very complex inside just like our human body!</p>
+	<div>Elegant, easy to use, pleasure to programm!</div>
+	<div><i>Matz (Yukihiro Matsumoto)</i></div>
+	</section>
+
+	<section>
+	<h2>Everething is Object</h2>
+	<pre><code class="ruby">
+	  0.class #=> Fixnum
+	  /^reg/.class  #=> Regexp
+	  (1..10).class #=> Range
+	  MyClass.class #=> Class
+	  Class.class #=> class
+	  true.class #=> TrueClass
+	  nil.class #=> NilClass
+	  </code></pre>
+	</section>
+
+	<section>
+	<h2>Internal DSL</h2>
+	<pre><code class="ruby">
+Migration.up do
+ create_table 'users', inherits: 'stuff' do |t|
+   t.string :login, not_null: true, unique: false
+   t.date :bith_date
+ end
+end
+	  </code></pre>
+	</section>
+	<section>
+	<h2>Internal DSL Implementation</h2>
+	<pre><code class="ruby">class Migration
+  class << self # class methods
+    def up(&block)
+      #we eval block in scope of this object (potentialy dangerous)
+      instance_eval(&block)
+      connection.execute( declarations.join(';'))
+    end
+
+    def declarations; @declarations ||=[]; end
+
+    def create_table(name, opts={})
+      t = Table.new(name, opts)
+      yield t
+      declarations<< t
+    end
+  end
+end </code></pre>
+	</section>
+	<section>
+	<h2>Internal DSL Implementation</h2>
+	<pre ><code style="max-height: 1000px;" class="ruby">class Table
+  def initialize(name,opts)
+    @name, @opts = name, opts
+  end
+
+  def column(name, type, opts={})
+    opts.merge(name: name, type: type)
+    (@columns ||= [])<< opts
+  end
+
+  def string(name,opt)
+    columns name, 'varchar', opts
+  end
+
+  def date(name,opt)
+    columns name, 'date', opts
+  end
+
+  def to_sql
+   %Q[create table #{@name} (#{@columns.map{|k,opts| "#{k} #{opts[:type]}"}.join(',')})]
+  end
+end </code></pre>
+	</section>
+	<section>
+	<h2>Operators as methods, method punctuation</h2>
+	<pre><code class="ruby">class Point
+  def initialize(x,y); @x, @y = x, y; end
+  def [](coord)
+    self.send(coord) if self.respond_to?(coord)
+  end
+
+  def +(pt)
+    raise "Ups" unless pt.is_a?(Point)
+    @x += pt.x
+    @y += pt.y
+  end
+end
+
+def pt(*args)
+  Point.new(*args)
+end
+
+pt(1,2) + pt(2,1) #=> pt(3,3)
+</code></pre>
+	</section>
+	<section>
+	<h2>Classes body is active!</h2>
+	<pre><code class="ruby">class Programmer
+  if Time.now.monday?
+    def monday_method
+      "monday, monday"
+    end
+  end
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>ActiveRecord Validation DSL</h2>
+	<pre><code class="ruby">class User < ActiveRecord::Base
+  validates :email, present: true, unique: true
+  has_many :groups
+end
+
+user = User.new(name: 'Admin')
+
+unless user.save
+  puts user.errors #=> ['Email is required']
+end
+
+user.groups #=> groups
+</code></pre>
+	</section>
+	<section>
+	<h2>Modules</h2>
+	<pre><code class="ruby">module Loggable
+  def log(message)
+    logger.debug(message)
+  end
+
+  def profile(name)
+    start = Time.now
+    yield
+    log("#{name}: #{Time.now - start} sec.")
+  end
+end
+
+class Service < BaseService
+  include Loggable
+
+  def serve
+    log("start job")
+    profile "long operation" do
+      #...
+    end
+  end
+end
+
+</code></pre>
+	</section>
+	<section>
+	<h2>Ruby Installation</h2>
+	<a href="https://rvm.io/"> <img src="rvm.png"></a>
+	<pre><code class="bash">
+curl -L https://get.rvm.io | bash -s stable --ruby #install rvm
+rvm install 2.0 #install ruby 2
+rvm install 1.9.3
+rvm install jruby
+
+rvm use 2.0
+#or create in your project .rvmrc file with required ruby
+</code></pre>
+	</section>
+	<section>
+	<h2>RubyGems.org: Manage gems</h2>
+	<pre><code class="bash">gem install rails
+gem list
+# *** LOCAL GEMS ***
+
+# activesupport (3.2.11)
+# builder (3.1.4)
+# bundler (1.0.22 ruby)
+# coderay (1.0.8)
+# colorize (0.5.8)
+# diff-lcs (1.1.3)
+# expression_parser (0.9.0)
+# github-markdown (0.5.3)
+# github-markup (0.7.5)
+# grit (2.5.0)
+# huffshell (0.0.11)
+
+gem update rails
+</code></pre>
+	</section>
+	<section>
+	<h2>Bundler: Manage Project Deps</h2>
+	<a href="http://gembundler.com/"><img src="gembundler.png" style="width:300px"></a>
+	<pre><code class="bash">gem install rails
+gem install bundler
+
+# Gemfile in root of your project
+source "https://rubygems.org"
+gem "nokogiri"
+gem "rack", "~>1.1"
+gem "rspec", :require => "spec"
+
+bundle install
+bundle update
+
+</code></pre>
+	</section>
+	<section>
+	<h2>Testing: Rspec; Factory Girl</h2>
+	<div>ActiveRecord test in tansactions with rollback</div>
+	<pre><code class="ruby">
+#$ gem install rspec factory_girl or put it in your Gemfile
+
+factory :user do
+  name "John"
+  email  "email"
+end
+
+describe User, "#score" do
+  subject = { Factory.build(:user, email: nil) }
+  it "validate email" do
+    subject.validate
+    subject.errors.should include(/email requried/)
+  end
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Testing: Capibara</h2>
+	<pre><code class="ruby">#Capibara
+it "signs me in" do
+  visit '/sessions/new'
+  within("#session") do
+    fill_in 'Login', :with => 'user@example.com'
+    fill_in 'Password', :with => 'password'
+  end
+  click_link 'Sign in'
+  page.should have_content 'Success'
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Automation: rake </h2>
+	<pre><code class="ruby">#$ gem install rake
+namespace :mydb do
+  desc "dump db"
+  task :dump do
+    file = "/opt/backup/#{Time.now}.back"
+    `pg_dump mydb > #{file} && rm #{/back/last} && ln /back/last #{file}`
+  end
+
+  desc "upload to s3"
+  task :s3 do
+    `s3cmd put /back/last s3://mycompany/back/last`
+  end
+
+  desc "maintain"
+  task :default=>[:dump, :s3]
+end
+
+#$ rake -T
+#$ rake mydb:s3
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: Web Dev that doesn't hurt</h2>
+	<img src="rails.png">
+	<br/>
+	<ul>
+	  <li>generators</li>
+	  <li>MVC</li>
+	  <li>migrations</li>
+	  <li>rakes</li>
+	  <li>routing</li>
+	  <li>assets</li>
+	  <li>everething for your productivity</li>
+	</ul>
+	</section>
+	<section>
+	<h2>Rails: Generators</h2>
+	<pre><code class="ruby">
+rails new myproject
+echo 'gem "haml"' >> Gemfile
+echo 'gem "simple_form"' >> Gemfile
+echo 'gem "rspec"' >> Gemfile
+echo 'gem "twitter_bootstrap"' >> Gemfile
+bundle install
+
+cd myproject
+rake db:create
+rails g controller wellcome index
+rails g scaffold user name email bithdate:date
+rake db:create db:migrate
+rails s -p 80
+chromium-browser http://localhost
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: Migrations</h2>
+	<pre><code class="ruby">rails g migration create_users_with_groups
+def up
+  create_table 'users' do |t|
+    t.string :email
+    t.string :status
+    t.string :password
+  end
+
+  create_table :participations do |t|
+    t.timestamp :start_time
+    t.references :user
+    t.references :group
+  end
+
+  create_table 'groups' do |t|
+    t.integer :owner
+    t.string :name
+  end
+
+  add_index :users, :email
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: ActiveRecord</h2>
+	<pre><code class="ruby">
+class User < ActiverRecord::Base
+  validates :email, presense: true, uniqueness: true
+  has_many :participations
+  has_many :groups, through: :participations
+  scope :active, -> { where(status: 'active' }
+end
+
+u = User.create(email: 'admin@m.io')
+g = Group.create(name: 'admins')
+u.groups<< g
+
+User.active.include(:groups).order('email').each do |u|
+  puts "#{u.email}"
+  puts u.groups.map(&:name).join(', ')
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: Controllers</h2>
+	<pre><code class="ruby">class UsersController < ApplicationController::Base
+  before_filter :require_login
+
+  respond_to :html, :xml, :json
+
+  def index
+    respond_with(@users = User.all)
+  end
+
+  def create
+    @user = User.create(params[:user])
+    respond_with(@user, :location => users_url)
+  end
+
+  private
+  def require_login
+    redirect_to login_path if current_user.nil?
+  end
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: Routing</h2>
+	<pre><code class="ruby">
+match "/patients/:id" => "patients#show"
+resources :photos
+resources :photos, :as => "images"
+match '*pages' => 'pages#show', :format => true
+namespace :admin do
+  resources :posts, :comments
+end
+</code></pre>
+	</section>
+	<section>
+	<h2>Rails: Views</h2>
+	<pre><code class="haml">%ul
+  - @users.each do |user|
+    %li.item= link_to user.name, user_path(user)
+
+= simple_form_for (@quiz) do |f|
+  = f.error_notification
+  .inputs
+    = f.input :body
+    = f.fields_for :quiz_choices do |builder|
+      = render "quiz_choice_fields", :f => builder
+    %p= link_to_add_association  "Add a choice",f, :quiz_choices
+  .actions
+    = f.button :submit
+</code></pre>
+	</section>
+	<section>
+	<h2>More about Rails</h2>
+	<h3> Google & Next time</h3>
+	</section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+	width: 960,
+	height: 700,
+
+	// Factor of the display size that should remain empty around the content
+	margin: 0.05,
+
+	// Bounds for smallest/largest possible scale to apply to content
+	minScale: 0.2,
+	maxScale: 1.5,
+	controls: true,
+	progress: true,
+	history: true,
+	center: true,
+
+	theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+	transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+	// Optional libraries used to extend on reveal.js
+	dependencies: [
+	{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+	{ src: 'plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+	{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+	{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+	// { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+	]
+      });
+
+    </script>
+
+  </body>
+</html>
