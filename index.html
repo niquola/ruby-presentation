@@ -55,7 +55,7 @@
 
 	<section>
 	<h2>PHILOSOPHY of RUBY</h2>
-	<h2>HUMAN CENTRIC</h2>
+	<h2>HUMANISTIC</h2>
 	<img src="body.jpg">
 	<p>Ruby is simple in appearance but is very complex inside just like our human body!</p>
 	<div>Elegant, easy to use, pleasure to programm!</div>
@@ -444,6 +444,53 @@ end
   .actions
     = f.button :submit
 </code></pre>
+	</section>
+	<section>
+	<h2>RAILS: Assets</h2>
+	<h4> Coffee </h4>
+	<pre><code class="coffee">jQuery ->
+  $("#order_credit_card_number").blur ->
+    if CreditCard.validNumber(@value)
+      $("#credit_error").text("")
+    else
+      $("#credit_error").text("Invalid credit card number.")
+</code></pre>
+	<h4> Scss </h4>
+	<pre><code class="scss">a {
+  color: $main-color;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+</code></pre>
+	</section>
+	<section>
+	<h2>RAILS: tests/specs</h2>
+	<ul>
+	  <li>Unit Tests for Models and utils (FactoryGirl)</li>
+	  <li>Request Specs (Capibara + Selenium/Webkit)</li>
+	  <li>Mailers Specs</li>
+	  <li>Performance Tests</li>
+	</ul>
+	</section>
+	<section>
+	<h2>RAILS: deploy</h2>
+	<ul>
+	  <li>Capistrano</li>
+	  <li>Chef</li>
+	  <li>Heroku</li>
+	</ul>
+	</section>
+	<section>
+	<h2>RAILS: enginies plugins gems</h2>
+	<ul>
+	  <li>devise</li>
+	  <li>simple form</li>
+	  <li>act_as_{commentable, netsted_sets, statemachine, ...}</li>
+	  <li>twitter bootstrap, burbon, compas etc</li>
+	  <li>and more...</li>
+	</ul>
 	</section>
 	<section>
 	<h2>More about Rails</h2>
